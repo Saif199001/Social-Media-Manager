@@ -2,11 +2,12 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.views import View
 import requests
+from django.shortcuts import redirect
 from apps.accounts.models import User
 from .providers.facebook import FacebookProvider
 
 from apps.workspaces.models import Workspace
-from apps.social_accounts.services.oauth_state import OAuthStateService
+from apps.social_accounts.services.oauth_state import OAuthStateService, InvalidOAuthState
 
 
 class FacebookConnectView(View):
@@ -38,9 +39,7 @@ class FacebookConnectView(View):
             scopes=scopes,
         )
 
-        return JsonResponse({
-            "auth_url": auth_url
-        })
+        return redirect(auth_url)
     
 
 class FacebookCallbackView(View):
@@ -54,8 +53,8 @@ class FacebookCallbackView(View):
 
         # ✅ STEP 1: Verify state
         try:
-            state_obj = OAuthStateService.verify_state(state)
-        except Exception:
+            state_obj = OAuthStateService.consume_state(raw_state=state)
+        except InvalidOAuthState:
             return JsonResponse({"error": "Invalid or expired state"}, status=400)
 
         # ✅ STEP 2: Exchange code for access token
