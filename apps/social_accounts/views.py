@@ -25,7 +25,7 @@ class FacebookConnectView(View):
 
         provider = FacebookProvider()
 
-        redirect_uri = "http://127.0.0.1:8000/api/v1/social-accounts/facebook/callback/"
+        redirect_uri = "https://social-media-manager-hgqy.onrender.com/api/v1/social-accounts/facebook/callback/"
 
         scopes = [
             "pages_show_list",
@@ -65,7 +65,7 @@ class FacebookCallbackView(View):
         token_params = {
             "client_id": settings.META_APP_ID,
             "client_secret": settings.META_APP_SECRET,
-            "redirect_uri": "http://127.0.0.1:8000/api/v1/social-accounts/facebook/callback/",
+            "redirect_uri": "https://social-media-manager-hgqy.onrender.com/api/v1/social-accounts/facebook/callback/",
             "code": code,
         }
 
