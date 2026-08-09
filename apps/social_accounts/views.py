@@ -14,7 +14,7 @@ class FacebookConnectView(View):
 
     def get(self, request):
 
-        user = request.user
+        user = User.objects.first() # temporary
         workspace = Workspace.objects.first()  # temporary
 
         raw_state = OAuthStateService.create_state(
