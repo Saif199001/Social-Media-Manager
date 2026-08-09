@@ -2,8 +2,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.views import View
 import requests
-
-from .services.oauth_state import OAuthStateService
+from apps.accounts.models import User
 from .providers.facebook import FacebookProvider
 
 from apps.workspaces.models import Workspace
