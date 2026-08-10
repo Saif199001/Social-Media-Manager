@@ -67,6 +67,7 @@ class SocialAccount(models.Model):
     )
 
     avatar_url = models.URLField(
+        max_length=2048,
         blank=True,
         null=True,
     )
