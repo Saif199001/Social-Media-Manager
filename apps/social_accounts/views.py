@@ -1,4 +1,5 @@
 from django.conf import settings
+import logging
 from django.http import JsonResponse
 from django.views import View
 from django.shortcuts import redirect
@@ -8,6 +9,8 @@ from .services.social_account_service import SocialAccountService
 from apps.workspaces.models import Workspace
 from apps.social_accounts.services.oauth_state import OAuthStateService, InvalidOAuthState
 
+
+logger = logging.getLogger(__name__)
 
 class FacebookConnectView(View):
 
@@ -60,13 +63,18 @@ class FacebookCallbackView(View):
         redirect_uri = "https://social-media-manager-hgqy.onrender.com/api/v1/social-accounts/facebook/callback/"
 
         # ✅ SERVICE CALL
-        accounts = SocialAccountService.connect_facebook(
-            code=code,
-            redirect_uri=redirect_uri,
-            state_obj=state_obj
-        )
+        try:
+            accounts = SocialAccountService.connect_facebook(
+                code=code,
+                redirect_uri=redirect_uri,
+                state_obj=state_obj
+            )
 
-        return JsonResponse({
-            "message": "Facebook connected successfully",
-            "accounts": accounts
-        })
+        except Exception:
+            logger.exception("FACEBOOK_OAUTH_CALLBACK_FAILED")
+            return JsonResponse(
+                {
+                    "error": "Facebook connection failed"
+                },
+                status=500
+            )
