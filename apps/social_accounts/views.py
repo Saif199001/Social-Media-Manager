@@ -78,3 +78,11 @@ class FacebookCallbackView(View):
                 },
                 status=500
             )
+
+        return JsonResponse(
+            {
+                "message": "Facebook connected successfully",
+                "accounts": accounts,
+            },
+            status=200,
+        )
