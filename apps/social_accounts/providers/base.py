@@ -1,108 +1,117 @@
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
 class OAuthTokenData:
     """
-    Normalized OAuth token data returned by any provider.
+    Generic OAuth credential/token data returned by a provider.
+
+    This object contains sensitive token information and should
+    only exist in memory until CredentialService persists it
+    securely.
     """
 
     access_token: str
+
     refresh_token: Optional[str] = None
+
     expires_at: Optional[datetime] = None
+
     refresh_token_expires_at: Optional[datetime] = None
-    scopes: list[str] = field(default_factory=list)
-    raw_data: dict[str, Any] = field(default_factory=dict)
+
+    scopes: List[str] = field(default_factory=list)
+
+    raw_data: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class ProviderAccountData:
     """
-    Normalized social account data returned by any provider.
+    Generic non-secret account information returned by a
+    social platform provider.
+
+    OAuth credentials must NOT be stored in this object.
     """
 
     platform: str
+
     platform_account_id: str
+
     display_name: str
 
-    account_type: str = "other"
+    account_type: str
+
     username: Optional[str] = None
+
     avatar_url: Optional[str] = None
 
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(
+        default_factory=dict
+    )
 
 
-class BaseSocialProvider(ABC):
+@dataclass
+class ProviderConnectedAccount:
     """
-    Base contract for all social media providers.
+    Represents one connected account discovered through
+    a provider.
 
-    Every provider adapter such as Meta, LinkedIn or YouTube
-    must implement this interface.
+    account:
+        Non-secret platform/account information.
+
+    credential:
+        OAuth credential information associated with that
+        account. CredentialService is responsible for secure
+        persistence.
     """
 
-    provider_name: str = ""
+    account: ProviderAccountData
 
-    @abstractmethod
+    credential: OAuthTokenData
+
+
+class BaseSocialProvider:
+    """
+    Abstract contract for social media providers.
+
+    Provider implementations handle platform-specific OAuth
+    and API behavior.
+
+    Credential persistence is handled outside the provider
+    through CredentialService.
+    """
+
+    platform: str = ""
+
     def get_authorization_url(
         self,
         *,
         state: str,
         redirect_uri: str,
-        scopes: list[str],
+        scopes: List[str],
     ) -> str:
-        """
-        Generate provider OAuth authorization URL.
-        """
         raise NotImplementedError
 
-    @abstractmethod
     def exchange_code_for_token(
         self,
         *,
         code: str,
         redirect_uri: str,
     ) -> OAuthTokenData:
-        """
-        Exchange OAuth authorization code for token data.
-        """
         raise NotImplementedError
 
-    @abstractmethod
-    def get_accounts(
-        self,
-        *,
-        access_token: str,
-    ) -> list[ProviderAccountData]:
-        """
-        Fetch social accounts/pages/channels available
-        through the authenticated provider identity.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def refresh_access_token(
         self,
         *,
         refresh_token: str,
     ) -> OAuthTokenData:
-        """
-        Refresh an expired or expiring access token.
-
-        Providers that do not support conventional refresh tokens
-        should implement their provider-specific refresh mechanism.
-        """
         raise NotImplementedError
 
-    @abstractmethod
-    def revoke_access(
+    def get_accounts(
         self,
         *,
         access_token: str,
-    ) -> bool:
-        """
-        Revoke/disconnect provider authorization.
-        """
+    ) -> List[ProviderConnectedAccount]:
         raise NotImplementedError

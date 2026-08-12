@@ -30,6 +30,7 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 META_APP_ID = os.getenv("META_APP_ID")
 META_APP_SECRET = os.getenv("META_APP_SECRET")
+SOCIAL_ACCOUNT_ENCRYPTION_KEY= os.getenv("SOCIAL_ACCOUNT_ENCRYPTION_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
@@ -117,7 +118,7 @@ tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
 DATABASES = {
     'default': dj_database_url.parse(
         os.getenv("DATABASE_URL"),
-        conn_max_age=600,
+        conn_max_age=0,
         ssl_require=True
     )
 }
